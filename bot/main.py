@@ -1,15 +1,12 @@
 from telegram import Update
-from telegram.ext import Application, CommandHandler, MessageHandler, filters, CallbackContext
-from telegram.constants import ParseMode
+from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes
 import logging
-from bot import config, commands, utils
 
 # Enable logging
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# Define bot commands
-async def start(update: Update, context: CallbackContext) -> None:
+async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """Send a start message."""
     await update.message.reply_text(
         "🤖 Welcome to the PFP Management Bot!\n\n"
@@ -17,7 +14,7 @@ async def start(update: Update, context: CallbackContext) -> None:
         "ℹ️ Use /help to see all available commands and features!"
     )
 
-async def help_command(update: Update, context: CallbackContext) -> None:
+async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """Provide help information for bot usage."""
     await update.message.reply_text(
         "💡 Available Commands:\n"
@@ -28,29 +25,27 @@ async def help_command(update: Update, context: CallbackContext) -> None:
         "/stats - View bot statistics\n"
     )
 
-async def error(update: Update, context: CallbackContext) -> None:
-    """Log Errors caused by Updates."""
-    logger.warning(f'Update {update} caused error {context.error}')
+async def ping(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    """Respond to ping command."""
+    await update.message.reply_text("🏓 Pong!")
 
-async def main():
+async def stats(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    """Provide bot statistics."""
+    # Placeholder for stats; replace with actual implementation
+    await update.message.reply_text("📊 Bot stats: [implement your stats here]")
+
+async def main() -> None:
     """Start the bot."""
-    # Create the Application and pass it your bot's token
-    application = Application.builder().token(config.TOKEN).build()
+    application = ApplicationBuilder().token('YOUR_TOKEN_HERE').build()
 
     # Add commands
     application.add_handler(CommandHandler("start", start))
     application.add_handler(CommandHandler("help", help_command))
-    application.add_handler(CommandHandler("ping", utils.ping))
-    application.add_handler(CommandHandler("stats", utils.stats))
+    application.add_handler(CommandHandler("ping", ping))
+    application.add_handler(CommandHandler("stats", stats))
 
-    # Add error handler
-    application.add_error_handler(error)
-
-    # Start the Bot
-    await application.start_polling()
-    
-    # Run the bot until you press Ctrl+C
-    await application.idle()
+    # Start the bot
+    await application.run_polling()
 
 if __name__ == '__main__':
     import asyncio
