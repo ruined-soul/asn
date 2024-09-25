@@ -3,7 +3,7 @@
 import os
 
 # Bot token
-TOKEN = 7273900330:AAHqmbBMRLzku7KBBHpSoEUgmPwJYR7SjeM  # Retrieve from environment variables for Koyeb
+TOKEN = '7273900330:AAHqmbBMRLzku7KBBHpSoEUgmPwJYR7SjeM'
 
 # Owner and Sudo users
 OWNER_ID = int(os.getenv('OWNER_ID'))  # Telegram user ID of the bot owner
