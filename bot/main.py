@@ -1,23 +1,26 @@
+# main.py
+
 from telegram import Update
-from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes
+from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, CallbackContext
 import logging
-import asyncio
+from bot import config, commands, utils
 
 # Enable logging
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+# Define bot commands
+def start(update: Update, context: CallbackContext) -> None:
     """Send a start message."""
-    await update.message.reply_text(
+    update.message.reply_text(
         "🤖 Welcome to the PFP Management Bot!\n\n"
         "📁 Upload, search, and manage your profile pictures with ease. \n"
         "ℹ️ Use /help to see all available commands and features!"
     )
 
-async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+def help_command(update: Update, context: CallbackContext) -> None:
     """Provide help information for bot usage."""
-    await update.message.reply_text(
+    update.message.reply_text(
         "💡 Available Commands:\n"
         "/upload - Upload a new profile picture\n"
         "/search [pfp_id] - Search for a profile picture by its ID\n"
@@ -26,30 +29,32 @@ async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
         "/stats - View bot statistics\n"
     )
 
-async def ping(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    """Respond to ping command."""
-    await update.message.reply_text("🏓 Pong!")
+def error(update: Update, context: CallbackContext) -> None:
+    """Log Errors caused by Updates."""
+    logger.warning(f'Update {update} caused error {context.error}')
 
-async def stats(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    """Provide bot statistics."""
-    # Placeholder for stats; replace with actual implementation
-    await update.message.reply_text("📊 Bot stats: [implement your stats here]")
-
-async def main() -> None:
+def main() -> None:
     """Start the bot."""
-    application = ApplicationBuilder().token('YOUR_TOKEN_HERE').build()
+    # Initialize the Updater with your bot token
+    updater = Updater(token=config.TOKEN, use_context=True)
 
-    # Add commands
-    application.add_handler(CommandHandler("start", start))
-    application.add_handler(CommandHandler("help", help_command))
-    application.add_handler(CommandHandler("ping", ping))
-    application.add_handler(CommandHandler("stats", stats))
+    # Get the dispatcher to register handlers
+    dp = updater.dispatcher
 
-    # Start the bot
-    await application.run_polling()
+    # Add command handlers
+    dp.add_handler(CommandHandler("start", start))
+    dp.add_handler(CommandHandler("help", help_command))
+    dp.add_handler(CommandHandler("ping", utils.ping))  # Ensure ping function is defined in utils
+    dp.add_handler(CommandHandler("stats", utils.stats))  # Ensure stats function is defined in utils
 
-# This condition is necessary for proper functioning on platforms with existing event loops
+    # Add error handler
+    dp.add_error_handler(error)
+
+    # Start the Bot
+    updater.start_polling()
+    
+    # Run the bot until you press Ctrl-C or the process receives SIGINT, SIGTERM, or SIGABRT
+    updater.idle()
+
 if __name__ == '__main__':
-    # Get the current event loop and run the main function in it
-    loop = asyncio.get_event_loop()
-    loop.run_until_complete(main())
+    main()
