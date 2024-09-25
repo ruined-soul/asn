@@ -1,6 +1,7 @@
 from telegram import Update
 from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes
 import logging
+import asyncio
 
 # Enable logging
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
@@ -47,6 +48,8 @@ async def main() -> None:
     # Start the bot
     await application.run_polling()
 
+# This condition is necessary for proper functioning on platforms with existing event loops
 if __name__ == '__main__':
-    import asyncio
-    asyncio.run(main())
+    # Get the current event loop and run the main function in it
+    loop = asyncio.get_event_loop()
+    loop.run_until_complete(main())
